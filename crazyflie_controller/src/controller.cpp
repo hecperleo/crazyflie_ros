@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
+#include <std_msgs/Int8.h>
 #include <geometry_msgs/Twist.h>
 
 
@@ -73,6 +74,7 @@ public:
         ros::NodeHandle nh;
         m_listener.waitForTransform(m_worldFrame, m_frame, ros::Time(0), ros::Duration(10.0)); 
         m_pubNav = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+        m_pubState = nh.advertise<std_msgs::Int8>("state", 1);
         m_subscribeGoal = nh.subscribe("goal", 1, &Controller::goalChanged, this);
         m_serviceTakeoff = nh.advertiseService("takeoff", &Controller::takeoff, this);
         m_serviceLand = nh.advertiseService("land", &Controller::land, this);
@@ -210,6 +212,9 @@ private:
             }
             break;
         }
+        std_msgs::Int8 int_state;
+        int_state.data = m_state;
+        m_pubState.publish(int_state);
     }
 
 private:
@@ -226,6 +231,7 @@ private:
     std::string m_worldFrame;
     std::string m_frame;
     ros::Publisher m_pubNav;
+    ros::Publisher m_pubState;
     tf::TransformListener m_listener;
     PID m_pidX;
     PID m_pidY;
